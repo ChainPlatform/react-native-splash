@@ -9,8 +9,8 @@ class SplashController {
         this._ref = null;
     }
 
-    show(header = "", sub = "", logo = "") {
-        if (this._ref) this._ref.show(header, sub, logo);
+    show(header = "", sub = "", logo = "", bg = null) {
+        if (this._ref) this._ref.show(header, sub, logo, bg);
     }
 
     hide() {
