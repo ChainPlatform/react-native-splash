@@ -1,5 +1,6 @@
-# Chain Platform Splash
-@chainplatform/splash is a lightweight React Native & Web library for showing global splash/loading screens using Context and animated transitions — without relying on component state.
+# React Native & React Native Web Splash
+
+@chainplatform/splash is a lightweight React Native & Web library for showing global splash/loading screens using Context and animated transitions --- without relying on component state.
 
 <p align="center">
   <a href="https://github.com/ChainPlatform/react-native-splash/blob/HEAD/LICENSE">
@@ -24,165 +25,105 @@
 
 # 💧 @chainplatform/splash
 
-A universal splash/loading overlay for React Native & React Native Web — no state, fully controlled via Provider and static API.
+A universal splash/loading overlay for React Native & React Native Web --- state-free, ultra-fast, and controlled by a static API.
 
----
+------------------------------------------------------------------------
 
 ## 🚀 Features
 
-- ✅ Works with both **class** and **function** components
-- 💨 Animated fade-in/out transitions (uses `Animated` API)
-- 🧠 Global control via context + static API (`Splash.show()` / `Splash.hide()`)
-- 🖼️ Supports logo, header, subtext, and custom theme colors
-- 🌍 Compatible with React Native Web
-- 🪶 Zero dependencies (except React Native core)
+-   ⚡ **Instant show/hide** --- stays mounted, no re-render delay
+-   🧠 Controlled globally via `Splash.show()` / `Splash.hide()`
+-   🎨 Custom logo, title, subtitle, and dynamic background color
+-   🌍 Fully compatible with **React Native Web**
+-   💨 Smooth animated fade transitions using `Animated` API
+-   🪶 Minimal dependencies --- zero context/state overhead
 
----
+------------------------------------------------------------------------
 
 ## 📦 Installation
 
-```bash
+``` bash
 npm install @chainplatform/splash
 # or
 yarn add @chainplatform/splash
 ```
 
----
+------------------------------------------------------------------------
 
 ## 🧠 Basic Usage
 
 ### 1️⃣ Wrap your app with `SplashProvider`
 
-```tsx
+``` tsx
 import React from "react";
 import { SplashProvider } from "@chainplatform/splash";
 import MainNavigation from "./MainNavigation";
 
 export default function App() {
   return (
-    <SplashProvider
-      theme={{ colors: { primary: "#007bff", background: "#fff" } }}
-      logo={"https://chainplatform.github.io/chain.png"}
-    >
+    <SplashProvider theme={{ colors: { primary: "#007bff", background: "#fff" } }}>
       <MainNavigation />
     </SplashProvider>
   );
 }
 ```
 
----
+------------------------------------------------------------------------
 
 ### 2️⃣ Show / Hide Splash Anywhere
 
-Works globally in both **class** and **functional** components:
-
-```tsx
+``` tsx
 import { Splash } from "@chainplatform/splash";
 
-// Show splash
-Splash.show({
-  header: "Loading Data",
-  sub: "Please wait...",
-  logo: "https://chainplatform.github.io/chain.png",
-});
+// Show splash instantly
+Splash.show(0, "Loading", "Please wait...", "https://chainplatform.github.io/chain.png", "#fff");
 
-// Hide splash after 2s
-setTimeout(() => Splash.hide(), 2000);
+// Hide splash after 1.5s
+setTimeout(() => Splash.hide(0), 1500);
 ```
 
----
-
-### 3️⃣ Example inside components
-
-#### Function Component
-
-```tsx
-import React from "react";
-import { Button } from "react-native";
-import { Splash } from "@chainplatform/splash";
-
-export default function HomeScreen() {
-  return (
-    <Button title="Show Splash" onPress={() => {
-      Splash.show({ header: "Syncing...", sub: "Fetching latest data" });
-      setTimeout(() => Splash.hide(), 1500);
-    }} />
-  );
-}
-```
-
-#### Class Component
-
-```tsx
-import React, { Component } from "react";
-import { Button } from "react-native";
-import { Splash } from "@chainplatform/splash";
-
-export default class Settings extends Component {
-  render() {
-    return (
-      <Button title="Load" onPress={() => {
-        Splash.show({ header: "Please wait", sub: "Processing..." });
-        setTimeout(() => Splash.hide(), 1500);
-      }} />
-    );
-  }
-}
-```
-
----
+------------------------------------------------------------------------
 
 ## ⚙️ API Reference
 
 ### 🔹 `SplashProvider` Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `theme` | `{ colors: { primary: string, background: string } }` | Theme colors |
-| `logo` | `string` | Optional logo URL |
-| `animationDuration` | `number` | Animation fade duration (default: 300ms) |
+  --------------------------------------------------------------------------------------------------------------
+  Prop              Type                                                    Description
+  ----------------- ------------------------------------------------------- ------------------------------------
+  `theme`           `{ colors: { primary: string, background: string } }`   Optional color theme
 
----
+  `bgProp`          `string`                                                Background color (default: white)
+  --------------------------------------------------------------------------------------------------------------
 
 ### 🔹 `Splash` Static Methods
 
-| Method | Description |
-|---------|-------------|
-| `Splash.show(options)` | Show global splash overlay |
-| `Splash.hide()` | Hide splash overlay |
+  ---------------------------------------------------------------------------------------------------
+  Method                                           Params               Description
+  ------------------------------------------------ -------------------- -----------------------------
+  `Splash.show(duration, header, sub, logo, bg)`   Duration in ms (0 =  Show global splash overlay
+                                                   instant)             
 
-#### `options`
+  `Splash.hide(duration)`                          Duration in ms (0 =  Hide splash overlay
+                                                   instant)             
+  ---------------------------------------------------------------------------------------------------
 
-| Key | Type | Description |
-|------|------|-------------|
-| `header` | `string` | Optional main title |
-| `sub` | `string` | Optional subtitle |
-| `logo` | `string` | Custom logo URL |
-| `theme` | `object` | Override theme colors for this splash |
+------------------------------------------------------------------------
 
----
+## 🧩 Notes
 
-## 🧩 Animated Transition
+-   The splash view is **never unmounted** --- eliminating render delay
+-   `setNativeProps` ensures **instant background rendering**
+-   Optimized for both **React Native** and **React Native Web**
+-   Ideal for global transitions, route loading, or async actions
 
-Splash uses React Native's `Animated` API.  
-It automatically detects platform:
-- Uses `useNativeDriver` on Android/iOS
-- Falls back to non-native animation on Web
-
----
-
-## 🧪 Tips
-
-- Works across navigation stacks (no remount needed)
-- Ideal for global loaders, onboarding splash, or async operations
-- Safe for concurrent `.show()` and `.hide()` calls
-
----
+------------------------------------------------------------------------
 
 ## 🪪 License
+
 MIT © 2025 [Chain Platform](https://chainplatform.net)
 
----
+------------------------------------------------------------------------
 
 ## 💖 Support & Donate
 

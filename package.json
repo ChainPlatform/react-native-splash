@@ -1,7 +1,7 @@
 {
   "name": "@chainplatform/splash",
-  "version": "0.2.0",
-  "description": "@chainplatform/splash",
+  "version": "0.2.1",
+  "description": "@chainplatform/splash is a lightweight React Native & Web library for showing global splash/loading screens using Context and animated transitions --- without relying on component state.",
   "main": "index.js",
   "author": "Chain Platform <santran686@gmail.com> (https://chainplatform.net/)",
   "license": "MIT",
@@ -21,6 +21,9 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "react-native-web": "*"
+    "react-native-web": "*",
+    "@chainplatform/animated": "*",
+    "@chainplatform/layout": "*",
+    "@chainplatform/progressive-image": "*"
   }
 }
