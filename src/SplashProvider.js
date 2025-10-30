@@ -1,94 +1,145 @@
-import { useEffect, useRef, useReducer } from "react";
-import {
-    Animated,
-    View,
-    ActivityIndicator,
-    StyleSheet,
-    Platform,
-} from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, View, ActivityIndicator, StyleSheet, Platform } from "react-native";
 import { ViewLoader } from "@chainplatform/progressive-image";
 import DancingText from "@chainplatform/animated";
 import { setSize, sdkColors } from "@chainplatform/layout";
 import SplashController from "./SplashController";
 
-export const SplashProvider = ({ children, theme, backgroundColor: bgProp }) => {
-    const opacity = useRef(new Animated.Value(1)).current;
-    const visible = useRef(true);
-    const renderFlag = useRef(true);
-    const headerRef = useRef("");
-    const subRef = useRef("");
-    const logoRef = useRef("");
+export const SplashProvider = ({
+    children,
+    theme,
+    bgProp,
+    defaultHeader = "",
+    defaultSub = "",
+    defaultLogo = ""
+}) => {
+    const opacity = useRef(new Animated.Value(1)).current; // start visible
+    const [renderFlag, setRenderFlag] = useState(true);
+    const [visible, setVisible] = useState(true);
 
-    const [, forceRender] = useReducer(x => x + 1, 0);
+    const [header, setHeader] = useState(defaultHeader);
+    const [sub, setSub] = useState(defaultSub);
+    const [logo, setLogo] = useState(defaultLogo);
+    const [background, setBackground] = useState(bgProp || sdkColors.white);
+
+    const autoHideTimer = useRef(null);
 
     const primary = theme?.colors?.primary || sdkColors.primary;
-    const backgroundColor = bgProp || sdkColors.white;
     const IS_WEB = Platform.OS === "web";
 
-    const show = (header = "", sub = "", logo = "", bg = null) => {
-        headerRef.current = header;
-        subRef.current = sub;
-        logoRef.current = logo;
-        SplashController.tempBackground = bg || null;
-
-        visible.current = true;
-        renderFlag.current = true;
-        forceRender();
-
-        Animated.timing(opacity, {
-            toValue: 1,
-            duration: 350,
-            useNativeDriver: !IS_WEB,
-        }).start();
+    // clear any auto-hide timer
+    const clearAutoHide = () => {
+        if (autoHideTimer.current) {
+            clearTimeout(autoHideTimer.current);
+            autoHideTimer.current = null;
+        }
     };
 
-    const hide = () => {
+    const show = (duration = 350, headerTxt = "", subTxt = "", logoSrc = "", bg = null, options = {}) => {
+        // normalize options (backward compat if options is a number)
+        const opts = typeof options === "number" ? { autoHideAfter: options } : (options || {});
+        clearAutoHide();
+
+        if (headerTxt) setHeader(headerTxt);
+        if (subTxt) setSub(subTxt);
+        if (logoSrc) setLogo(logoSrc);
+        setBackground(bg || bgProp || sdkColors.white);
+
+        setRenderFlag(true);
+        setVisible(true);
+
+        if (duration <= 0) {
+            opacity.setValue(1);
+        } else {
+            opacity.setValue(0);
+            Animated.timing(opacity, {
+                toValue: 1,
+                duration,
+                useNativeDriver: !IS_WEB,
+            }).start();
+        }
+
+        // auto hide if requested
+        if (opts.autoHideAfter && typeof opts.autoHideAfter === "number" && opts.autoHideAfter > 0) {
+            autoHideTimer.current = setTimeout(() => {
+                // default hide animation 350ms
+                hide(350);
+                autoHideTimer.current = null;
+            }, opts.autoHideAfter);
+        }
+    };
+
+    const hide = (duration = 350) => {
+        clearAutoHide();
+
+        if (!visible && !renderFlag) return;
+
+        if (duration <= 0) {
+            opacity.setValue(0);
+            setVisible(false);
+            setRenderFlag(false);
+            return;
+        }
+
         Animated.timing(opacity, {
             toValue: 0,
-            duration: 350,
+            duration,
             useNativeDriver: !IS_WEB,
         }).start(() => {
-            visible.current = false;
-            renderFlag.current = false;
-            forceRender();
+            setVisible(false);
+            setRenderFlag(false);
         });
     };
 
     useEffect(() => {
+        // register controller
         SplashController.register({ show, hide });
-        return () => SplashController.unregister();
+
+        // If controller had a pending show call before provider mounted, handle it
+        const pending = SplashController._pending;
+        if (pending && typeof pending === "object") {
+            // destructure pending and call show with options
+            const { duration, header, sub, logo, bg, opts } = pending;
+            // clear the pending since we consume it
+            SplashController._pending = null;
+            show(duration, header, sub, logo, bg, opts);
+        }
+
+        return () => {
+            // cleanup
+            clearAutoHide();
+            SplashController.unregister();
+        };
     }, []);
 
-    const currentBackground =
-        SplashController.tempBackground || backgroundColor;
+    if (!renderFlag) return children;
 
     return (
         <>
             {children}
-
-            {renderFlag.current && (
+            {visible && (
                 <Animated.View
-                    pointerEvents={visible.current ? "auto" : "none"}
+                    pointerEvents="auto"
                     style={[
-                        StyleSheet.absoluteFillObject,
+                        StyleSheet.absoluteFill,
                         {
                             opacity,
-                            backgroundColor: currentBackground,
+                            backgroundColor: background,
                             justifyContent: "center",
                             alignItems: "center",
-                            zIndex: 1000000000,
-                            elevation: 1000000000,
+                            zIndex: 999999999,
+                            elevation: 999999999,
                         },
                     ]}
                 >
                     <View style={{ width: setSize(80), height: setSize(80) }}>
-                        {logoRef.current ? (
+                        {logo ? (
                             <ViewLoader
                                 indicator={setSize(80)}
                                 style={{
                                     showLoading: false,
                                     imageType: "link",
-                                    source: logoRef.current,
+                                    source: logo,
                                     style: {
                                         width: setSize(80),
                                         height: setSize(80),
@@ -111,9 +162,9 @@ export const SplashProvider = ({ children, theme, backgroundColor: bgProp }) => 
                         )}
                     </View>
 
-                    {headerRef.current ? (
+                    {header ? (
                         <DancingText
-                            letters={headerRef.current}
+                            letters={header}
                             textStyle={{
                                 fontSize: setSize(16),
                                 fontWeight: "600",
@@ -124,9 +175,9 @@ export const SplashProvider = ({ children, theme, backgroundColor: bgProp }) => 
                         />
                     ) : null}
 
-                    {subRef.current ? (
+                    {sub ? (
                         <DancingText
-                            letters={subRef.current}
+                            letters={sub}
                             animated
                             textStyle={{
                                 fontSize: setSize(14),
