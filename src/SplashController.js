@@ -16,6 +16,9 @@ class SplashController {
     }
 
     show(duration = 350, header = "", sub = "", logo = "", bg = null, options = {}) {
+        if (typeof global !== "undefined" && global.__CHAIN_PULL_REFRESHING) {
+            return;
+        }
         const opts = typeof options === "number" ? { autoHideAfter: options } : (options || {});
         if (this._instance) {
             this._instance.show(duration, header, sub, logo, bg, opts);
